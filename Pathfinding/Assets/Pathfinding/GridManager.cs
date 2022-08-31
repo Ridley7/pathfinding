@@ -4,6 +4,23 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
+    private static GridManager _instance;
+
+    public static GridManager Instance
+    {
+        get
+        {
+            _instance = FindObjectOfType<GridManager>();
+            if(_instance != null)
+            {
+                return _instance;
+            }
+
+            return null;
+        }
+    }
+
+
     public int nRows;
     public int nColumns;
     public float gridCellSize;
@@ -55,7 +72,7 @@ public class GridManager : MonoBehaviour
         return insideHeight && insideWidth;
     }
 
-    private int GetCellIndex(Vector3 pos)
+    public int GetCellIndex(Vector3 pos)
     {
         if (!IsInBounds(pos))
         {
@@ -95,6 +112,49 @@ public class GridManager : MonoBehaviour
         cellPos.y = cellPos.y + gridCellSize / 2;
 
         return cellPos;
+    }
+
+    private void AssignNeighbor(int row, int column, List<Node> neighbors)
+    {
+        if(row != -1 && column != -1 && row < nRows && column < nColumns)
+        {
+            Node nodeToAdd = nodes[row, column];
+            if (!nodeToAdd.isObstacle)
+            {
+                neighbors.Add(nodeToAdd);
+            }
+        }
+    }
+
+    public void GetNeighbors(Node node, List<Node> neighbors)
+    {
+        Vector3 nodePos = node.position;
+        int nodeIndex = GetCellIndex(nodePos);
+
+        int row = GetRows(nodeIndex);
+        int column = GetColumns(nodeIndex);
+
+        //Bottom
+        int nodeRow = row - 1;
+        int nodeColumn = column;
+        AssignNeighbor(nodeRow, nodeColumn, neighbors);
+
+        //Top
+        nodeRow = row + 1;
+        nodeColumn = column;
+        AssignNeighbor(nodeRow, nodeColumn, neighbors);
+
+        //Right
+        nodeRow = row;
+        nodeColumn = column + 1;
+        AssignNeighbor(nodeRow, nodeColumn, neighbors);
+
+        //Left
+        nodeRow = row;
+        nodeColumn = column - 1;
+        AssignNeighbor(nodeRow, nodeColumn, neighbors);
+
+        
     }
 
     private void DebugDrawGrid(Vector3 origin, int nRows, int nColumns, float cellSize, Color color)
